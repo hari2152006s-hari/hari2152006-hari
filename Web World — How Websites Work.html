@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Web World — How Websites Work</title>
+<style>
+:root{--bg:#f6f4ff;--card:#fff;--tx:#23224a;--mu:#5d5c80;--bd:#e3e0f5;--b:#5b8def;--p:#8b6cf0;--t:#2bb9a9;--w:#ffb48a;--sh:0 6px 20px rgba(91,80,200,.12);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#15142b;--card:#201f3f;--tx:#eceaff;--mu:#a9a7cf;--bd:#34325e;--sh:0 6px 20px rgba(0,0,0,.4)}}
+:root[data-theme=dark]{--bg:#15142b;--card:#201f3f;--tx:#eceaff;--mu:#a9a7cf;--bd:#34325e;--sh:0 6px 20px rgba(0,0,0,.4)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1050px;margin:auto;padding:0 18px 60px}
+section{padding:46px 0}h2{font-size:1.7rem;margin:0 0 6px}h3{margin:.2em 0}
+.sub{color:var(--mu);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;box-shadow:var(--sh)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+button,input,select{font:inherit;color:inherit}
+.btn{background:linear-gradient(135deg,var(--b),var(--p));color:#fff;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;font-weight:600;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}.btn.alt{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+:focus-visible{outline:3px solid var(--t);outline-offset:2px}
+input,select{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:7px 10px;max-width:100%}
+pre{background:#1e1d3a;color:#dcd9ff;border-radius:12px;padding:12px;overflow-x:auto;font-size:.84rem;margin:8px 0;line-height:1.5}
+pre .hl{background:rgba(255,200,90,.25);display:block;border-radius:4px}
+.tag{display:inline-block;font-size:.75rem;padding:2px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--bd);color:var(--mu)}
+.try{background:linear-gradient(135deg,rgba(255,180,138,.25),rgba(139,108,240,.15));border-radius:12px;padding:8px 12px;font-size:.9rem;margin-top:10px}
+.sim{background:rgba(255,180,138,.25);border:1px dashed var(--w);border-radius:10px;padding:6px 12px;font-size:.85rem;margin:10px 0}
+.hero{text-align:center;padding:50px 0 20px}.hero h1{font-size:clamp(1.9rem,5vw,3.2rem);line-height:1.15;margin:0 0 10px;background:linear-gradient(90deg,var(--b),var(--p),var(--t));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mu);max-width:560px;margin:0 auto 20px;font-size:1.1rem}
+svg{max-width:100%;height:auto}.float{animation:fl 3s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-6px)}}
+.nodes{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.node{flex:1 1 130px;border:2px solid var(--bd);background:var(--card);border-radius:16px;padding:10px;cursor:pointer;text-align:center;transition:.25s}
+.node:hover,.node.on{border-color:var(--p);transform:translateY(-3px);box-shadow:var(--sh)}.node b{display:block}.node span{font-size:.75rem;color:var(--mu)}
+.node.act{border-color:var(--t);background:rgba(43,185,169,.18);transform:scale(1.04)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.prev{border:1px solid var(--bd);border-radius:12px;padding:14px;background:#fff;color:#222;transition:.2s}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.tabs button{border:1px solid var(--bd);background:var(--card);border-radius:999px;padding:6px 14px;cursor:pointer}.tabs button[aria-selected=true]{background:var(--p);color:#fff;border-color:var(--p)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:6px;border-bottom:1px solid var(--bd)}td input{width:70px}
+.scroll{overflow-x:auto}
+.bar{height:10px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--t),var(--p));transition:width .4s}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:9px 12px;border:1px solid var(--bd);background:var(--bg);border-radius:12px;cursor:pointer}
+.opt.ok{background:rgba(43,185,169,.3)}.opt.no{background:rgba(255,120,120,.3)}
+.cmp div{margin:6px 0}
+.p{opacity:.95}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.p{display:none}}
+</style></head><body><main>
+
+<div class="hero" id="top">
+<svg viewBox="0 0 620 200" width="560" role="img" aria-label="A browser, a server and a database connected by moving data particles">
+<defs><path id="a" d="M120 100H270"/><path id="b" d="M350 100H500"/></defs>
+<g class="float"><rect x="20" y="50" width="100" height="100" rx="14" fill="#5b8def"/><rect x="30" y="62" width="80" height="78" rx="6" fill="#fff"/><circle cx="38" cy="56" r="3" fill="#ffb48a"/><text x="70" y="108" text-anchor="middle" font-size="22" fill="#8b6cf0" font-family="monospace">&lt;/&gt;</text></g>
+<g class="float" style="animation-delay:.5s"><rect x="270" y="45" width="80" height="110" rx="14" fill="#8b6cf0"/><circle cx="295" cy="80" r="5" fill="#fff"/><circle cx="325" cy="80" r="5" fill="#fff"/><path d="M290 105q15 12 30 0" stroke="#fff" stroke-width="3" fill="none"/><rect x="285" y="125" width="50" height="8" rx="4" fill="#2bb9a9"/></g>
+<g class="float" style="animation-delay:1s"><ellipse cx="540" cy="65" rx="40" ry="14" fill="#2bb9a9"/><rect x="500" y="65" width="80" height="70" fill="#2bb9a9"/><ellipse cx="540" cy="135" rx="40" ry="14" fill="#2bb9a9"/><ellipse cx="540" cy="100" rx="40" ry="14" fill="none" stroke="#fff" stroke-width="3"/><ellipse cx="540" cy="65" rx="40" ry="14" fill="#5fd3c5"/></g>
+<use href="#a" stroke="#c7c2ee" stroke-width="3" stroke-dasharray="6 6" fill="none"/><use href="#b" stroke="#c7c2ee" stroke-width="3" stroke-dasharray="6 6" fill="none"/>
+<circle class="p" r="6" fill="#ffb48a"><animateMotion dur="2s" repeatCount="indefinite"><mpath href="#a"/></animateMotion></circle>
+<circle class="p" r="6" fill="#ffb48a"><animateMotion dur="2s" begin="1s" repeatCount="indefinite"><mpath href="#b"/></animateMotion></circle>
+<circle class="p" r="5" fill="#5b8def"><animateMotion dur="2s" begin=".5s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#a"/></animateMotion></circle>
+</svg>
+<h1>Discover the Magic Behind Every Website</h1>
+<p>Explore the hidden world of code, servers, and databases — one interaction at a time.</p>
+<button class="btn" id="start">Start Exploring ↓</button>
+</div>
+
+<section id="learn"><h2>🗺️ How a website fits together</h2>
+<p class="sub">Click any part to learn about it. <span class="tag">Front-end: runs in your browser</span> <span class="tag">Back-end: runs on a server</span></p>
+<div class="nodes" id="nodes"></div>
+<svg viewBox="0 0 700 60" width="100%" aria-hidden="true"><defs><path id="f" d="M30 30H670"/></defs><use href="#f" stroke="#c7c2ee" stroke-width="3" stroke-dasharray="6 6"/>
+<circle class="p" r="6" fill="#ffb48a"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#f"/></animateMotion></circle>
+<circle class="p" r="6" fill="#2bb9a9"><animateMotion dur="3s" begin="1.5s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#f"/></animateMotion></circle>
+<text x="30" y="14" font-size="12" fill="#8b6cf0">request →</text><text x="560" y="54" font-size="12" fill="#2bb9a9">← response</text></svg>
+<div class="card" id="panel" aria-live="polite"></div>
+<div class="try">🎯 Try it yourself: click all six parts and find which two are NOT front-end.</div></section>
+
+<section><h2>🎨 Front-end playground</h2><p class="sub">HTML, CSS and JavaScript — structure, looks and behaviour.</p>
+<div class="grid">
+<div class="card"><h3>HTML — The Structure</h3>
+<label>Heading: <input id="h-in" value="Hello, Web!"></label>
+<div class="prev" style="margin-top:10px"><h4 id="h-out" style="margin:0">Hello, Web!</h4><p style="margin:6px 0">This paragraph is just text on a page.</p><button style="padding:5px 12px">A button</button></div>
+<pre><span class="hl">&lt;h1 id="h-out"&gt;<span id="h-code">Hello, Web!</span>&lt;/h1&gt;</span>
+&lt;p&gt;This paragraph…&lt;/p&gt;
+&lt;button&gt;A button&lt;/button&gt;</pre>
+<div class="try">🎯 Change the heading to your name.</div></div>
+
+<div class="card"><h3>CSS — The Appearance</h3>
+<div class="row"><label>Background <input type="color" id="c-bg" value="#e8f0ff"></label><label>Text <input type="color" id="c-tx" value="#23224a"></label></div>
+<div class="row"><label>Size <input type="range" id="c-fs" min="12" max="32" value="18"></label><label>Spacing <input type="range" id="c-pd" min="4" max="40" value="16"></label><label>Radius <input type="range" id="c-br" min="0" max="40" value="12"></label></div>
+<div class="prev" id="c-prev"><b>Styled box</b><br>Move the sliders!</div>
+<pre id="c-code"></pre><div class="try">🎯 Make the box a perfect pill shape.</div></div>
+
+<div class="card"><h3>JavaScript — The Behaviour</h3>
+<div class="row"><button class="btn" id="j-btn">Click me</button><button class="btn alt" id="j-minus" aria-label="Decrease">−</button><b id="j-count" aria-live="polite">0</b><button class="btn alt" id="j-plus" aria-label="Increase">+</button></div>
+<div class="row"><span>Mini quiz: which language adds behaviour?</span><button class="btn alt" data-a="html">HTML</button><button class="btn alt" data-a="js">JavaScript</button></div>
+<pre id="j-code">// Click something to see the line that ran</pre>
+<div class="try">🎯 Click + five times, then watch the code line change.</div></div>
+</div></section>
+
+<section><h2>🐍 Back-end playground</h2><p class="sub">Meet Pip, the friendly server. He waits for requests and sends back answers.</p>
+<div class="sim">⚠️ Simulation only — no Python is running here. This page just plays a pre-written story.</div>
+<div class="grid"><div class="card">
+<svg viewBox="0 0 420 130" width="100%" role="img" aria-label="Browser sends request to Pip the server"><defs><path id="r" d="M90 65H310"/></defs>
+<rect x="10" y="30" width="80" height="70" rx="10" fill="#5b8def"/><text x="50" y="72" text-anchor="middle" fill="#fff" font-size="12">Browser</text>
+<g id="pip"><rect x="310" y="20" width="90" height="90" rx="16" fill="#8b6cf0"/><circle cx="337" cy="52" r="6" fill="#fff"/><circle cx="373" cy="52" r="6" fill="#fff"/><path id="mouth" d="M335 80q20 12 40 0" stroke="#fff" stroke-width="3" fill="none"/></g>
+<use href="#r" stroke="#c7c2ee" stroke-width="3" stroke-dasharray="6 6"/><circle id="pk" r="8" fill="#ffb48a" cx="90" cy="65"/><text id="bub" x="200" y="20" text-anchor="middle" font-size="12" fill="#8b6cf0"></text></svg>
+<div class="row"><button class="btn" id="send">Send Request</button><span id="sstat" aria-live="polite">Idle</span></div>
+<div id="bk" style="display:none"><b>1. Request</b><pre>GET /api/greeting?name=Hari HTTP/1.1</pre><b>2. Python route (Flask style)</b><pre>@app.route("/api/greeting")
+def greeting():
+    name = request.args["name"]
+    return {"message": f"Hello, {name}!"}</pre><b>3. Response</b><pre>200 OK
+{"message": "Hello, Hari!"}</pre><b>4. Browser shows:</b> <span class="tag" id="bres">Hello, Hari!</span></div></div>
+<div class="card"><h3>Three popular Python frameworks</h3>
+<p><b>Flask</b> — tiny and simple. Great first choice.</p><p><b>Django</b> — "batteries included": users, admin and database tools built in.</p><p><b>FastAPI</b> — modern and fast, great for building APIs.</p>
+<div class="try">🎯 Press Send Request and match each step to the code.</div></div></div></section>
+
+<section><h2>🗄️ Database playground</h2><p class="sub">A database is a super-organised filing cabinet 🗂️ that remembers things.</p>
+<div class="sim">⚠️ Simulated — these records live in this page's memory only and vanish on refresh. No real database is used.</div>
+<div class="grid"><div class="card">
+<div class="row"><input id="d-q" placeholder="Search name…" aria-label="Search student"></div>
+<div class="scroll"><table><thead><tr><th>Name</th><th>Score</th><th></th></tr></thead><tbody id="d-body"></tbody></table></div>
+<div class="row"><input id="d-n" placeholder="New name" aria-label="New student name"><input id="d-s" type="number" min="0" max="100" placeholder="Score" style="width:80px" aria-label="New score"><button class="btn" id="d-add">Add</button></div>
+<div class="try">🎯 Add yourself with score 100, then change it to 90.</div></div>
+<div class="card"><h3>The SQL that would run</h3><pre id="d-sql">SELECT * FROM students;</pre>
+<pre>SELECT * FROM students WHERE name LIKE '%a%';
+INSERT INTO students (name, score) VALUES ('Zoe', 80);
+UPDATE students SET score = 95 WHERE name = 'Zoe';
+DELETE FROM students WHERE name = 'Zoe';</pre>
+<p><b>SQL</b> is a language for talking to databases. <b>SQLite</b> is a tiny database in one file. <b>PostgreSQL</b> is a powerful server database with tables. <b>MongoDB</b> stores flexible documents instead of tables.</p></div></div></section>
+
+<section><h2>🚀 Full-stack journey</h2><p class="sub">Follow one click all the way through. (Simulated.)</p>
+<div class="card"><div class="nodes" id="jn"></div>
+<div class="bar"><i id="jbar"></i></div>
+<p><b id="jt">Press “Run the Journey”.</b></p><pre id="jd">—</pre>
+<div class="row"><button class="btn" id="jrun">▶ Run the Journey</button><button class="btn alt" id="jpause">⏸ Pause</button><button class="btn alt" id="jreplay">↻ Replay</button><button class="btn alt" id="jreset">⏹ Reset</button></div>
+<p class="sub">💡 A simple static website (just HTML, CSS, JS files) needs no back-end or database. You only add them when pages must change per user or save data.</p></div></section>
+
+<section><h2>⚖️ Compare technologies</h2><p class="sub">These aren't always replacements — many do different jobs.</p>
+<div class="card"><div class="tabs" role="tablist" id="ctabs"></div><div class="cmp" id="cbody" aria-live="polite"></div></div></section>
+
+<section><h2>✅ Knowledge check</h2><div class="card"><div class="bar"><i id="qbar"></i></div><p class="sub" id="qprog"></p><div id="qbox"></div></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+$('#start').onclick=()=>$('#learn').scrollIntoView({behavior:'smooth'});
+// Architecture
+const P={Browser:['🌐','Front-end','The app you use to open websites (Chrome, Safari…). It reads code and draws the page.','Turns raw code into something you can see and click.','A browser is like a TV: it displays what is broadcast.','// The browser asks for a page\nGET / HTTP/1.1','Your browser receives files and builds the page.'],
+HTML:['🧱','Front-end','HyperText Markup Language: the structure and content of a page.','Tells the browser what is a heading, paragraph, image or button.','HTML is the skeleton of a body.','<h1>Hello</h1>\n<p>Welcome!</p>','Tags wrap content to give it meaning.'],
+CSS:['🎨','Front-end','Cascading Style Sheets: colours, fonts and layout.','Makes pages look good without changing their content.','CSS is clothes and decoration for the skeleton.','h1 {\n  color: purple;\n  font-size: 32px;\n}','Pick things with selectors, then set how they look.'],
+JavaScript:['⚡','Front-end','The language that makes pages react to you.','Lets pages respond: clicks, animations, loading new data.','JavaScript is the muscles and nerves — it moves things.','button.onclick = () => {\n  alert("Hi!");\n};','When something happens (an event), run some code.'],
+'Python Server':['🐍','Back-end','A program on another computer that answers requests, often written in Python.','Handles secret logic, logins and talks to the database safely.','A waiter: takes your order, fetches food from the kitchen.','@app.route("/hello")\ndef hello():\n    return "Hi!"','Python is just one choice; servers can use many languages.'],
+Database:['🗄️','Storage','Software that stores information in an organised way.','Remembers data (users, posts, scores) even after you close the page.','A giant, well-organised filing cabinet.','SELECT name, score\nFROM students;','Data is stored in tables with rows and columns.']};
+const nodes=$('#nodes');Object.keys(P).forEach((k,i)=>{const b=document.createElement('button');b.className='node';b.innerHTML=`<b>${P[k][0]} ${k}</b><span>${P[k][1]}</span>`;b.onclick=()=>show(k,b);nodes.append(b)});
+function show(k,b){$$('#nodes .node').forEach(n=>n.classList.remove('on'));b.classList.add('on');const d=P[k];$('#panel').innerHTML=`<h3>${d[0]} ${k} <span class="tag">${d[1]}</span></h3><p><b>What it is:</b> ${d[2]}</p><p><b>Problem it solves:</b> ${d[3]}</p><p><b>Analogy:</b> ${d[4]}</p><p><b>In plain words:</b> ${d[6]}</p><pre></pre>`;$('#panel pre').textContent=d[5]}
+nodes.children[0].click();
+// HTML
+$('#h-in').oninput=e=>{$('#h-out').textContent=$('#h-code').textContent=e.target.value};
+// CSS
+function css(){const p=$('#c-prev').style;p.background=$('#c-bg').value;p.color=$('#c-tx').value;p.fontSize=$('#c-fs').value+'px';p.padding=$('#c-pd').value+'px';p.borderRadius=$('#c-br').value+'px';
+$('#c-code').textContent=`.box {\n  background: ${$('#c-bg').value};\n  color: ${$('#c-tx').value};\n  font-size: ${$('#c-fs').value}px;\n  padding: ${$('#c-pd').value}px;\n  border-radius: ${$('#c-br').value}px;\n}`}
+$$('#c-bg,#c-tx,#c-fs,#c-pd,#c-br').forEach(i=>i.oninput=css);css();
+// JS
+let cnt=0,cl=0;const code=t=>$('#j-code').textContent=t;
+$('#j-btn').onclick=e=>{cl++;e.target.textContent=cl%2?'You clicked me! 🎉':'Click me';code(`button.textContent = "${e.target.textContent}";   // changes the text`)};
+$('#j-plus').onclick=()=>{cnt++;$('#j-count').textContent=cnt;code(`count = count + 1;  // now ${cnt}\ncounter.textContent = count;`)};
+$('#j-minus').onclick=()=>{cnt--;$('#j-count').textContent=cnt;code(`count = count - 1;  // now ${cnt}`)};
+$$('[data-a]').forEach(b=>b.onclick=()=>{const ok=b.dataset.a==='js';code(`if (answer === "js") {\n  feedback = "${ok?'Correct! JavaScript adds behaviour ✅':'Not quite — HTML is structure ❌'}";\n}`)});
+// Backend
+let busy=false;$('#send').onclick=()=>{if(busy)return;busy=true;const pk=$('#pk'),st=$('#sstat'),bub=$('#bub'),m=$('#mouth');$('#bk').style.display='none';
+const go=(x0,x1,ms,cb)=>{const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/ms);pk.setAttribute('cx',x0+(x1-x0)*k);k<1?requestAnimationFrame(f):cb()})(t0)};
+st.textContent='📨 Request travelling…';bub.textContent='GET /api/greeting';
+go(90,310,1200,()=>{st.textContent='🤔 Pip is thinking (running the route)…';bub.textContent='thinking…';m.setAttribute('d','M335 85q20 -8 40 0');setTimeout(()=>{m.setAttribute('d','M335 80q20 14 40 0');st.textContent='📬 Response coming back…';bub.textContent='200 OK';go(310,90,1200,()=>{st.textContent='✅ Done! (simulated)';bub.textContent='';$('#bk').style.display='block';busy=false})},1200)})};
+// DB
+let rows=[{n:'Asha',s:88},{n:'Ravi',s:72},{n:'Meena',s:95},{n:'Karthik',s:64}];
+const sql=t=>$('#d-sql').textContent=t;
+function draw(){const q=$('#d-q').value.toLowerCase(),b=$('#d-body');b.innerHTML='';rows.forEach((r,i)=>{if(!r.n.toLowerCase().includes(q))return;const tr=document.createElement('tr');const a=document.createElement('td');a.textContent=r.n;const c=document.createElement('td'),inp=document.createElement('input');inp.type='number';inp.value=r.s;inp.setAttribute('aria-label','Score for '+r.n);inp.onchange=()=>{r.s=+inp.value;sql(`UPDATE students SET score = ${r.s} WHERE name = '${r.n.replace(/'/g,"''")}';`)};c.append(inp);const d=document.createElement('td'),x=document.createElement('button');x.className='btn alt';x.textContent='Delete';x.setAttribute('aria-label','Delete '+r.n);x.onclick=()=>{rows.splice(i,1);sql(`DELETE FROM students WHERE name = '${r.n.replace(/'/g,"''")}';`);draw()};d.append(x);tr.append(a,c,d);b.append(tr)})}
+$('#d-q').oninput=()=>{sql(`SELECT * FROM students WHERE name LIKE '%${$('#d-q').value.replace(/'/g,"''")}%';`);draw()};
+$('#d-add').onclick=()=>{const n=$('#d-n').value.trim(),s=+$('#d-s').value;if(!n||$('#d-s').value==='')return;rows.push({n,s});sql(`INSERT INTO students (name, score) VALUES ('${n.replace(/'/g,"''")}', ${s});`);$('#d-n').value=$('#d-s').value='';draw()};draw();
+// Journey
+const JN=['🖱️ User','🌐 Browser','⚡ JavaScript','🐍 Server','🗄️ Database'];
+const jn=$('#jn');JN.forEach(t=>{const d=document.createElement('div');d.className='node';d.style.cursor='default';d.textContent=t;jn.append(d)});
+const JS=[[0,'User clicks “Save score”.','event: click on #saveBtn'],[1,'Browser collects the input from the form.','{ "name": "Zoe", "score": 80 }'],[2,'JavaScript sends a simulated HTTP request.','POST /api/scores\nContent-Type: application/json\n{"name":"Zoe","score":80}'],[3,'The Python server checks and processes it.','score is a number 0–100 ✔'],[4,'Database saves the record.','INSERT INTO students (name, score)\nVALUES (\'Zoe\', 80);'],[3,'Server returns a response.','201 Created\n{"ok": true, "id": 5}'],[1,'Browser displays the result.','Page shows: “Saved Zoe: 80 ✅”']];
+let ji=-1,jt=null;
+function step(){ji++;if(ji>=JS.length){clearInterval(jt);jt=null;return}const s=JS[ji];$$('#jn .node').forEach((n,i)=>n.classList.toggle('act',i===s[0]));$('#jt').textContent=`Step ${ji+1}/${JS.length}: ${s[1]}`;$('#jd').textContent=s[2];$('#jbar').style.width=((ji+1)/JS.length*100)+'%'}
+const run=()=>{if(jt)return;if(ji>=JS.length-1)jres();step();jt=setInterval(step,2200)};
+function jres(){clearInterval(jt);jt=null;ji=-1;$$('#jn .node').forEach(n=>n.classList.remove('act'));$('#jt').textContent='Press “Run the Journey”.';$('#jd').textContent='—';$('#jbar').style.width='0'}
+$('#jrun').onclick=run;$('#jpause').onclick=()=>{clearInterval(jt);jt=null};$('#jreset').onclick=jres;$('#jreplay').onclick=()=>{jres();run()};
+// Compare
+const C={'Front-end':['HTML/CSS/JS vs React & Vue','<b>HTML/CSS/JS</b>: the basics every site uses. Start here.','<b>React / Vue</b>: JavaScript libraries built ON TOP of these basics to manage big, changing interfaces. Learn the basics first.'],
+'Python':['Flask vs Django vs FastAPI','<b>Flask</b>: small and simple — good for learning and small apps.','<b>Django</b>: full toolkit with admin, users, database — good for big sites.','<b>FastAPI</b>: quick APIs with automatic docs — good for data/AI services.'],
+'Databases':['SQLite vs PostgreSQL vs MongoDB','<b>SQLite</b>: one file, no setup — great for learning.','<b>PostgreSQL</b>: robust server database for serious apps.','<b>MongoDB</b>: stores flexible JSON-like documents; handy when data shape varies.'],
+'Styling':['Plain CSS vs Bootstrap vs Tailwind','<b>Plain CSS</b>: full control; learn it first.','<b>Bootstrap</b>: ready-made components (buttons, navbars).','<b>Tailwind</b>: small utility classes you combine in your HTML. Both are built on CSS.'],
+'Site type':['Static vs dynamic','<b>Static</b>: same files for everyone (portfolio, blog). Simple and fast.','<b>Dynamic</b>: content changes per user or time, using a back-end and often a database (shops, social apps).']};
+Object.keys(C).forEach((k,i)=>{const b=document.createElement('button');b.textContent=k;b.setAttribute('role','tab');b.onclick=()=>{$$('#ctabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('#cbody').innerHTML=`<h3>${C[k][0]}</h3>`+C[k].slice(1).map(t=>`<div>${t}</div>`).join('')};$('#ctabs').append(b);if(!i)b.click()});
+// Quiz
+const Q=[['Which language gives a page its structure?',['CSS','HTML','Python'],1,'HTML defines headings, paragraphs and buttons.'],['Where does JavaScript usually run in a simple website?',['In the browser','In the database','In a filing cabinet'],0,'JS runs in your browser and reacts to clicks.'],['What does a Python back-end route do?',['Colours the page','Answers a request from the browser','Draws a table'],1,'A route receives a request and returns a response.'],['What is a database for?',['Storing information in an organised way','Making animations','Choosing fonts'],0,'Databases remember data for you.'],['Does a simple static website need a back-end?',['Always','Not necessarily','Only on Mondays'],1,'Static sites are just files; no server logic needed.']];
+let qi=0,sc=0;function ask(){const b=$('#qbox');b.innerHTML='';$('#qbar').style.width=(qi/Q.length*100)+'%';$('#qprog').textContent=`Question ${Math.min(qi+1,Q.length)} of ${Q.length} · Score ${sc}`;
+if(qi>=Q.length){b.innerHTML=`<h3>🎉 You scored ${sc} / ${Q.length}</h3><p>${sc>=4?'Fantastic — you understand the big picture!':'Nice effort! Re-explore the sections above and try again.'}</p>`;const r=document.createElement('button');r.className='btn';r.textContent='Try again';r.onclick=()=>{qi=0;sc=0;ask()};b.append(r);return}
+const q=Q[qi];const h=document.createElement('p');h.innerHTML='<b></b>';h.firstChild.textContent=q[0];b.append(h);const fb=document.createElement('p');fb.setAttribute('aria-live','polite');
+q[1].forEach((o,i)=>{const x=document.createElement('button');x.className='opt';x.textContent=o;x.onclick=()=>{$$('.opt').forEach((y,j)=>{y.disabled=true;if(j===q[2])y.classList.add('ok')});if(i===q[2]){sc++;fb.textContent='✅ Correct! '+q[3]}else{x.classList.add('no');fb.textContent='❌ Not quite. '+q[3]}
+const n=document.createElement('button');n.className='btn';n.textContent=qi===Q.length-1?'See score':'Next';n.onclick=()=>{qi++;ask()};b.append(n);$('#qprog').textContent=`Question ${qi+1} of ${Q.length} · Score ${sc}`};b.append(x)});b.append(fb)}
+ask();
+</script></body></html>

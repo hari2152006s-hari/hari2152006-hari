@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Green Basket Vegetable Market (Demo)</title>
+<style>
+  :root { --green:#2e7d32; --dark:#1b5e20; --light:#e8f5e9; --cream:#fff8e7; --cream2:#f6ecd0; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,sans-serif; background:var(--cream); color:#2b3a2b; line-height:1.5; }
+  header { background:linear-gradient(135deg,var(--green),var(--dark)); color:#fff; text-align:center; padding:28px 16px; }
+  header h1 { margin:0 0 8px; font-size:1.9rem; }
+  header p { max-width:640px; margin:0 auto; }
+  .emoji-row { font-size:2.2rem; letter-spacing:8px; margin-top:10px; }
+  main { max-width:960px; margin:0 auto; padding:16px; }
+  section { background:#fff; border:2px solid var(--cream2); border-radius:16px; padding:16px; margin-bottom:18px; }
+  h2 { margin-top:0; color:var(--dark); }
+  .demo-note { background:var(--cream2); border-radius:10px; padding:8px 12px; font-size:.9rem; }
+  /* Voice area */
+  .mic-wrap { text-align:center; }
+  #micBtn { background:var(--green); color:#fff; border:none; border-radius:40px; padding:14px 28px; font-size:1.15rem; cursor:pointer; }
+  #micBtn:hover { background:var(--dark); }
+  #micBtn.listening { background:#c62828; animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { transform:scale(1.06); } }
+  #heard { min-height:1.5em; margin:10px 0; font-style:italic; color:#555; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  input, select { padding:10px; border:2px solid #c8d8c8; border-radius:8px; font-size:1rem; flex:1; min-width:120px; }
+  button.btn { background:var(--green); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:1rem; cursor:pointer; }
+  button.btn.alt { background:#9e9e9e; }
+  button.btn:hover { opacity:.9; }
+  .hint { font-size:.85rem; color:#666; margin-top:8px; }
+  /* Conversation */
+  #chat { height:260px; overflow-y:auto; background:var(--cream); border-radius:10px; padding:10px; margin-bottom:10px; }
+  .msg { max-width:80%; padding:8px 12px; border-radius:14px; margin:6px 0; }
+  .bot { background:var(--light); border:1px solid #b9dcbc; }
+  .user { background:var(--green); color:#fff; margin-left:auto; }
+  /* Cards */
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .card { background:var(--light); border-radius:14px; padding:14px; text-align:center; border:2px solid #b9dcbc; }
+  .card .big { font-size:3rem; }
+  .card.out { opacity:.55; border-color:#e0a0a0; background:#fbeaea; }
+  .tag { display:inline-block; padding:2px 10px; border-radius:20px; font-size:.8rem; color:#fff; background:var(--green); }
+  .out .tag { background:#c62828; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:700px) { .two { grid-template-columns:1fr; } }
+  .box { margin-top:12px; background:var(--cream); border:2px dashed var(--green); border-radius:10px; padding:10px 14px; }
+  .box:empty { display:none; }
+  label { display:block; font-weight:600; margin:8px 0 4px; }
+  footer { text-align:center; font-size:.85rem; color:#666; padding:10px 0 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧺 Green Basket Vegetable Market</h1>
+  <p>Welcome to Green Basket Vegetable Market! You can use your voice to find vegetables, check availability, buy vegetables, or sell your products to us.</p>
+  <div class="emoji-row">🍅 🧅 🥔 🥕 🥬</div>
+</header>
+
+<main>
+  <p class="demo-note">⚠️ This is a learning demo. Prices are fictional, no real orders or payments happen, and nothing is saved.</p>
+
+  <!-- VOICE + CONVERSATION -->
+  <section>
+    <h2>🎤 Talk to the Market</h2>
+    <div class="mic-wrap">
+      <button id="micBtn">🎤 Speak to the Market</button>
+      <div id="heard">I heard: (nothing yet)</div>
+    </div>
+    <div id="chat"></div>
+    <div class="row">
+      <input id="textInput" placeholder="Or type here, e.g. Do you have onions?" autocomplete="off">
+      <button class="btn" id="sendBtn">Send</button>
+    </div>
+    <p class="hint">
+      Try: "Show me tomatoes" • "Do you have onions?" • "I want to buy two kilograms of potatoes" •
+      "I want to sell carrots" • "What vegetables are available?" • "How does this market work?"
+    </p>
+    <label><input type="checkbox" id="voiceOn" checked style="flex:none;min-width:0"> Speak the replies aloud</label>
+  </section>
+
+  <!-- INVENTORY -->
+  <section>
+    <h2>🥦 Today's Sample Vegetables</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- BUY AND SELL -->
+  <div class="two">
+    <section>
+      <h2>🛒 Buy Vegetables</h2>
+      <label for="buyVeg">Vegetable</label>
+      <select id="buyVeg"></select>
+      <label for="buyQty">Quantity</label>
+      <input id="buyQty" type="number" min="1" value="1">
+      <p style="margin-bottom:0"><button class="btn" id="buyBtn">Prepare demo order</button></p>
+      <div class="box" id="orderBox"></div>
+    </section>
+
+    <section>
+      <h2>💰 Sell to Us</h2>
+      <label for="sellName">Vegetable</label>
+      <input id="sellName" placeholder="e.g. carrots">
+      <label for="sellQty">How many kg or bunches?</label>
+      <input id="sellQty" type="number" min="1">
+      <label for="sellPrice">Expected price per kg or bunch (₹)</label>
+      <input id="sellPrice" type="number" min="1">
+      <p style="margin-bottom:0"><button class="btn" id="sellBtn">Submit sample offer</button></p>
+      <div class="box" id="sellBox"></div>
+    </section>
+  </div>
+</main>
+<footer>Green Basket is a fictional prototype for learning purposes.</footer>
+
+<script>
+/* ============================================================
+   1. SAMPLE DATA (fictional prices, no database)
+   ============================================================ */
+const inventory = [
+  { name: "tomatoes", aliases: ["tomato", "tomatoes"], price: 30, unit: "kg",    inStock: true,  emoji: "🍅" },
+  { name: "onions",   aliases: ["onion", "onions"],     price: 40, unit: "kg",    inStock: true,  emoji: "🧅" },
+  { name: "potatoes", aliases: ["potato", "potatoes"],  price: 25, unit: "kg",    inStock: true,  emoji: "🥔" },
+  { name: "carrots",  aliases: ["carrot", "carrots"],   price: 35, unit: "kg",    inStock: false, emoji: "🥕" },
+  { name: "spinach",  aliases: ["spinach"],             price: 20, unit: "bunch", inStock: true,  emoji: "🥬" }
+];
+
+// Memory of the conversation (what the market is currently waiting for)
+let pendingOrder = null;   // an order waiting for "yes" or "no"
+let waitingForQty = null;  // vegetable chosen, quantity still needed
+let sellFlow = null;       // step-by-step selling conversation
+
+/* ============================================================
+   2. SMALL HELPER FUNCTIONS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+// Make user-typed text safe before placing it inside HTML
+function escapeHtml(text) {
+  const d = document.createElement("div");
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// "kg" -> "kilogram(s)", "bunch" -> "bunch/bunches" (depends on quantity)
+function unitWord(unit, qty) {
+  if (unit === "kg") return qty === 1 ? "kilogram" : "kilograms";
+  return qty === 1 ? "bunch" : "bunches";
+}
+
+// Add a chat bubble. Bot messages are also spoken aloud if enabled.
+function addMessage(who, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.textContent = text;
+  $("chat").appendChild(div);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  if (who === "bot") speak(text);
+}
+
+// Speech synthesis: the browser reads the text aloud
+function speak(text) {
+  if (!("speechSynthesis" in window) || !$("voiceOn").checked) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text.replace(/₹/g, "rupees "));
+  utterance.lang = "en-IN";
+  window.speechSynthesis.speak(utterance);
+}
+
+/* ============================================================
+   3. UNDERSTANDING THE CUSTOMER'S WORDS
+   ============================================================ */
+
+// Look for a vegetable name (or its singular form) in the sentence
+function findVegetable(text) {
+  return inventory.find(item => item.aliases.some(word => text.includes(word))) || null;
+}
+
+// Look for a number, either digits ("2") or words ("two")
+function findNumber(text) {
+  const words = { one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10 };
+  const digits = text.match(/\d+(\.\d+)?/);
+  if (digits) return parseFloat(digits[0]);
+  for (const w in words) {
+    if (new RegExp("\\b" + w + "\\b").test(text)) return words[w];
+  }
+  return null;
+}
+
+// Decide what the customer wants (their "intention")
+function detectIntent(text, veg) {
+  if (/how does|how do|how it works|how this|help/.test(text)) return "help";
+  if (/sell/.test(text)) return "sell";
+  if (/buy|purchase|order/.test(text)) return "buy";
+  if (!veg && /what|list|available|everything|which/.test(text)) return "list";
+  if (veg) return "check";
+  return "unknown";
+}
+
+/* ============================================================
+   4. MAIN BRAIN: handleInput() receives spoken OR typed text
+   ============================================================ */
+function handleInput(rawText) {
+  const text = rawText.trim().toLowerCase();
+  if (!text) return;
+  addMessage("user", rawText.trim());
+
+  // Cancel anything in progress
+  if (/^(cancel|stop|never ?mind)/.test(text)) {
+    pendingOrder = waitingForQty = sellFlow = null;
+    $("orderBox").innerHTML = "";
+    return addMessage("bot", "No problem, cancelled. What would you like to do next?");
+  }
+
+  // Are we in the middle of a selling conversation?
+  if (sellFlow) return continueSell(rawText.trim(), text);
+
+  // Are we waiting for a quantity?
+  if (waitingForQty) {
+    const qty = findNumber(text);
+    if (qty) { const item = waitingForQty; waitingForQty = null; return prepareOrder(item, qty); }
+    return addMessage("bot", `Please tell me how many ${unitWord(waitingForQty.unit, 2)} of ${waitingForQty.name} you want, for example "2".`);
+  }
+
+  // Are we waiting for yes / no on an order?
+  if (pendingOrder) {
+    if (/\b(yes|yeah|confirm|ok|okay|sure)\b/.test(text)) return confirmOrder();
+    if (/\b(no|nope)\b/.test(text)) return declineOrder();
+  }
+
+  // Otherwise: find the vegetable and the intention
+  const veg = findVegetable(text);
+  const intent = detectIntent(text, veg);
+
+  if (intent === "help")  return explainMarket();
+  if (intent === "list")  return listVegetables();
+  if (intent === "check") return checkVegetable(veg);
+  if (intent === "buy")   return startBuy(veg, text);
+  if (intent === "sell")  return startSell(veg);
+
+  addMessage("bot", "Sorry, I didn't understand that. Try: \"Do you have onions?\", \"I want to buy 2 kilograms of potatoes\", or \"I want to sell carrots\".");
+}
+
+/* ============================================================
+   5. RESPONSES
+   ============================================================ */
+function explainMarket() {
+  addMessage("bot", "It's simple! Ask about a vegetable to see its sample price. Say \"I want to buy 2 kilograms of tomatoes\" to get a demo order. Say \"I want to sell carrots\" to make a sample offer. Nothing here is real.");
+}
+
+function listVegetables() {
+  const available = inventory.filter(v => v.inStock).map(v => `${v.name} (₹${v.price}/${v.unit})`);
+  addMessage("bot", "Available today: " + available.join(", ") + ". Carrots are currently out of stock.");
+}
+
+// Check inventory: price and availability of one vegetable
+function checkVegetable(item) {
+  if (!item.inStock) return outOfStock(item);
+  const per = item.unit === "kg" ? "kilogram" : "bunch";
+  addMessage("bot", `Yes! ${capitalise(item.name)} are available for ₹${item.price} per ${per} in our sample inventory.`);
+}
+
+function outOfStock(item) {
+  addMessage("bot", `Sorry, ${item.name} are currently unavailable. Would you like to check another vegetable?`);
+}
+
+function capitalise(word) { return word.charAt(0).toUpperCase() + word.slice(1); }
+
+/* ============================================================
+   6. BUYING
+   ============================================================ */
+function startBuy(item, text) {
+  if (!item) return addMessage("bot", "Which vegetable would you like to buy? For example: \"I want to buy 2 kilograms of potatoes\".");
+  if (!item.inStock) return outOfStock(item);
+  const qty = findNumber(text);
+  if (!qty) {
+    waitingForQty = item;
+    return addMessage("bot", `How many ${unitWord(item.unit, 2)} of ${item.name} would you like?`);
+  }
+  prepareOrder(item, qty);
+}
+
+// Calculate the total and show the order summary
+function prepareOrder(item, qty) {
+  if (!item.inStock) return outOfStock(item);
+  const total = item.price * qty;             // total = price x quantity
+  pendingOrder = { item, qty, total };
+  const unit = unitWord(item.unit, qty);
+  const per = item.unit === "kg" ? "kilogram" : "bunch";
+  $("orderBox").innerHTML = `
+    <strong>Demo order summary</strong><br>
+    ${item.emoji} ${qty} ${unit} of ${item.name}<br>
+    ₹${item.price} per ${per} × ${qty} = <strong>₹${total}</strong><br><br>
+    <button class="btn" onclick="confirmOrder()">Confirm demo order</button>
+    <button class="btn alt" onclick="declineOrder()">Cancel</button>`;
+  addMessage("bot", `${qty} ${unit} of ${item.name} at ₹${item.price} per ${per} costs ₹${total}. Would you like to confirm this demo order?`);
+}
+
+function confirmOrder() {
+  if (!pendingOrder) return;
+  const o = pendingOrder;
+  pendingOrder = null;
+  $("orderBox").innerHTML = `✅ <strong>Demo order confirmed!</strong><br>${o.item.emoji} ${o.qty} ${unitWord(o.item.unit, o.qty)} of ${o.item.name} — ₹${o.total}<br><small>This is only a demonstration. No real order or payment was made.</small>`;
+  addMessage("bot", "Your demo order is confirmed. Remember, this is only a demonstration, so no real order or payment was made.");
+}
+
+function declineOrder() {
+  pendingOrder = null;
+  $("orderBox").innerHTML = "";
+  addMessage("bot", "Okay, the demo order is cancelled. Anything else?");
+}
+
+/* ============================================================
+   7. SELLING (a short question-and-answer conversation)
+   ============================================================ */
+function startSell(item) {
+  sellFlow = { step: "veg", name: "", unit: "kg", qty: 0, price: 0 };
+  if (item) {
+    sellFlow.name = item.name; sellFlow.unit = item.unit; sellFlow.step = "qty";
+    return addMessage("bot", `Great! How many ${unitWord(item.unit, 2)} of ${item.name} would you like to sell?`);
+  }
+  addMessage("bot", "Great! Which vegetable do you want to sell?");
+}
+
+function continueSell(rawText, text) {
+  const f = sellFlow;
+  if (f.step === "veg") {
+    const known = findVegetable(text);
+    f.name = known ? known.name : rawText.toLowerCase();
+    f.unit = known ? known.unit : "kg";
+    f.step = "qty";
+    return addMessage("bot", `How many ${unitWord(f.unit, 2)} of ${f.name} do you have?`);
+  }
+  const number = findNumber(text);
+  if (!number) return addMessage("bot", "Please tell me a number, for example \"5\".");
+  if (f.step === "qty") {
+    f.qty = number; f.step = "price";
+    return addMessage("bot", `What price per ${f.unit === "kg" ? "kilogram" : "bunch"} (in rupees) are you expecting?`);
+  }
+  f.price = number;
+  showSellSubmission(f.name, f.qty, f.unit, f.price);
+  sellFlow = null;
+  addMessage("bot", `Thank you! Here is your sample offer: ${f.qty} ${unitWord(f.unit, f.qty)} of ${f.name} at ₹${f.price} each. This is a demo, so no buyer was contacted and nothing was saved.`);
+}
+
+function showSellSubmission(name, qty, unit, price) {
+  $("sellBox").innerHTML = `
+    <strong>Sample seller submission</strong><br>
+    Vegetable: ${escapeHtml(name)}<br>
+    Amount: ${qty} ${unitWord(unit, qty)}<br>
+    Expected price: ₹${price} per ${unit === "kg" ? "kilogram" : "bunch"}<br>
+    <small>Demo only: no buyer contacted, no personal data stored.</small>`;
+}
+
+/* ============================================================
+   8. BUTTONS AND FORMS
+   ============================================================ */
+// Draw vegetable cards and fill the Buy drop-down
+inventory.forEach(item => {
+  const per = item.unit === "kg" ? "kg" : "bunch";
+  $("cards").innerHTML += `
+    <div class="card ${item.inStock ? "" : "out"}">
+      <div class="big">${item.emoji}</div>
+      <strong>${capitalise(item.name)}</strong><br>₹${item.price}/${per}<br>
+      <span class="tag">${item.inStock ? "Available" : "Out of stock"}</span>
+    </div>`;
+  $("buyVeg").innerHTML += `<option value="${item.name}">${item.emoji} ${capitalise(item.name)}</option>`;
+});
+
+$("sendBtn").onclick = () => { handleInput($("textInput").value); $("textInput").value = ""; };
+$("textInput").onkeydown = e => { if (e.key === "Enter") $("sendBtn").click(); };
+
+$("buyBtn").onclick = () => {
+  const item = inventory.find(v => v.name === $("buyVeg").value);
+  const qty = parseFloat($("buyQty").value);
+  if (!qty || qty <= 0) return addMessage("bot", "Please enter a quantity greater than zero.");
+  prepareOrder(item, qty);
+};
+
+$("sellBtn").onclick = () => {
+  const name = $("sellName").value.trim();
+  const qty = parseFloat($("sellQty").value), price = parseFloat($("sellPrice").value);
+  if (!name || !qty || !price) return addMessage("bot", "Please fill in the vegetable, amount and price to submit a sample offer.");
+  const known = findVegetable(name.toLowerCase());
+  showSellSubmission(name, qty, known ? known.unit : "kg", price);
+  addMessage("bot", "Your sample offer is shown in the Sell section. It's only a demo, so nothing was sent or saved.");
+};
+
+/* ============================================================
+   9. MICROPHONE (Web Speech API)
+   ============================================================ */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+$("micBtn").onclick = () => {
+  if (!SpeechRecognition) {
+    return addMessage("bot", "Sorry, voice recognition isn't supported in this browser (Chrome or Edge work best). Please type your message in the box instead.");
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-IN";           // Indian English
+  recognition.interimResults = false;
+  recognition.onstart = () => { $("micBtn").classList.add("listening"); $("heard").textContent = "Listening... 🎧"; };
+  recognition.onresult = event => {
+    const spoken = event.results[0][0].transcript;   // the recognised words
+    $("heard").textContent = "I heard: \"" + spoken + "\"";
+    handleInput(spoken);
+  };
+  recognition.onerror = event => {
+    const blocked = event.error === "not-allowed" || event.error === "service-not-allowed";
+    addMessage("bot", blocked
+      ? "I can't use the microphone. Please allow microphone access, or type your message below."
+      : "I couldn't hear that clearly. Please try again, or type your message below.");
+  };
+  recognition.onend = () => $("micBtn").classList.remove("listening");
+  recognition.start();
+};
+
+if (!SpeechRecognition) {
+  $("heard").textContent = "Voice isn't supported in this browser, so please use the text box below.";
+}
+
+// Opening message
+addMessage("bot", "Welcome to Green Basket Vegetable Market! Press the microphone, or type, to find, buy or sell vegetables.");
+</script>
+</body>
+</html>
